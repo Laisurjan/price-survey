@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 所有人可讀寫自己的回覆（用 document ID 作為身份）
+    match /responses/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 設定（發布狀態）- 所有人可讀，寫入不限（簡易版，老師靠密碼保護）
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

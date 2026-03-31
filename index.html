@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>說故事學行銷 × 實地詢價任務</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== 登入畫面 ===== -->
+<div id="login-screen" class="screen active">
+  <div class="card login-card">
+    <h1>🛒 說故事學行銷<br>實地詢價任務</h1>
+    <p class="subtitle">多元選修課學習單</p>
+
+    <div class="login-tabs">
+      <button class="tab-btn active" data-tab="student">學生填寫</button>
+      <button class="tab-btn" data-tab="teacher">老師後台</button>
+    </div>
+
+    <!-- 學生登入 -->
+    <div id="student-login" class="tab-content active">
+      <div class="form-group">
+        <label>班級</label>
+        <input type="text" id="stu-class" placeholder="例：高二甲">
+      </div>
+      <div class="form-group">
+        <label>座號</label>
+        <input type="number" id="stu-seat" placeholder="例：5" min="1" max="60">
+      </div>
+      <div class="form-group">
+        <label>姓名</label>
+        <input type="text" id="stu-name" placeholder="請輸入姓名">
+      </div>
+      <div class="form-group">
+        <label>組別</label>
+        <select id="stu-group">
+          <option value="">請選擇組別</option>
+          <option value="1">第一組</option>
+          <option value="2">第二組</option>
+          <option value="3">第三組</option>
+          <option value="4">第四組</option>
+        </select>
+      </div>
+      <button id="btn-student-enter" class="btn btn-primary btn-block">開始填寫</button>
+    </div>
+
+    <!-- 老師登入 -->
+    <div id="teacher-login" class="tab-content">
+      <div class="form-group">
+        <label>老師密碼</label>
+        <input type="password" id="teacher-pwd" placeholder="請輸入密碼">
+      </div>
+      <button id="btn-teacher-enter" class="btn btn-primary btn-block">進入後台</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 學生填寫畫面 ===== -->
+<div id="student-screen" class="screen">
+  <header class="topbar">
+    <span id="stu-info-display"></span>
+    <button id="btn-logout" class="btn btn-sm">登出</button>
+  </header>
+
+  <div class="container">
+    <form id="survey-form">
+
+      <!-- 第二部分：商品資料蒐集表 -->
+      <section class="section">
+        <h2>📝 商品資料蒐集表</h2>
+        <p class="hint">請至少記錄 3 項商品（建議：飲料／點心／在地農產品）</p>
+
+        <div id="product-list">
+          <!-- 商品卡片由 JS 生成 -->
+        </div>
+        <button type="button" id="btn-add-product" class="btn btn-outline">＋ 新增商品</button>
+      </section>
+
+      <!-- 第三部分：現場觀察重點 -->
+      <section class="section">
+        <h2>🔍 現場觀察重點</h2>
+
+        <div class="sub-section">
+          <h3>1️⃣ 價格呈現方式（可複選）</h3>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="price_display" value="原價＋折扣價"> 原價＋折扣價</label>
+            <label><input type="checkbox" name="price_display" value="第二件優惠"> 第二件優惠</label>
+            <label><input type="checkbox" name="price_display" value="會員價"> 會員價</label>
+            <label><input type="checkbox" name="price_display" value="組合價"> 組合價</label>
+          </div>
+          <div class="form-group">
+            <label>其他</label>
+            <input type="text" name="price_display_other" placeholder="請補充">
+          </div>
+        </div>
+
+        <div class="sub-section">
+          <h3>2️⃣ 商品「故事」元素觀察（可複選）</h3>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="story_element" value="在地農產品（花蓮、小農）"> 在地農產品（花蓮、小農）</label>
+            <label><input type="checkbox" name="story_element" value="健康/無添加"> 健康／無添加</label>
+            <label><input type="checkbox" name="story_element" value="文化/情懷（古早味、職人精神）"> 文化／情懷（古早味、職人精神）</label>
+            <label><input type="checkbox" name="story_element" value="永續/環保"> 永續／環保</label>
+          </div>
+          <div class="form-group">
+            <label>其他</label>
+            <input type="text" name="story_element_other" placeholder="請補充">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>👉 請寫一句商品故事（模仿文案）</label>
+          <textarea name="story_copy" rows="2" placeholder="例：來自花蓮壽豐的有機黑豆，每一顆都是陽光的味道"></textarea>
+        </div>
+      </section>
+
+      <!-- 第四部分：定價方法分析 -->
+      <section class="section">
+        <h2>💰 定價方法分析</h2>
+        <p class="hint">請依觀察整理，用自己的話說明（至少3點）</p>
+        <div class="form-group">
+          <label>1. 定價方法</label>
+          <textarea name="pricing_1" rows="2" placeholder="例：成本加成定價 → 成本＋利潤"></textarea>
+        </div>
+        <div class="form-group">
+          <label>2. 定價方法</label>
+          <textarea name="pricing_2" rows="2" placeholder="例：市場競爭定價 → 跟其他品牌差不多"></textarea>
+        </div>
+        <div class="form-group">
+          <label>3. 定價方法</label>
+          <textarea name="pricing_3" rows="2" placeholder="例：價值定價 → 強調品牌或故事提高價格"></textarea>
+        </div>
+        <div class="form-group">
+          <label>4. 定價方法（加分）</label>
+          <textarea name="pricing_4" rows="2" placeholder="選填"></textarea>
+        </div>
+      </section>
+
+      <!-- 第五部分：價格競爭策略分析 -->
+      <section class="section">
+        <h2>⚔️ 價格競爭策略分析</h2>
+        <p class="hint">請比較「全聯 vs 農會超市」</p>
+
+        <div class="form-group">
+          <label>1️⃣ 哪一間比較便宜？為什麼？</label>
+          <textarea name="compare_cheap" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>2️⃣ 哪一間比較有「價值感」？（不一定最便宜）</label>
+          <textarea name="compare_value" rows="2"></textarea>
+        </div>
+
+        <div class="sub-section">
+          <h3>3️⃣ 他們使用了哪些價格策略？（可複選）</h3>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="strategy" value="低價策略（吸引大量客群）"> 低價策略（吸引大量客群）</label>
+            <label><input type="checkbox" name="strategy" value="差異化定價（強調特色）"> 差異化定價（強調特色）</label>
+            <label><input type="checkbox" name="strategy" value="組合促銷"> 組合促銷</label>
+            <label><input type="checkbox" name="strategy" value="心理定價（如99元）"> 心理定價（如99元）</label>
+            <label><input type="checkbox" name="strategy" value="在地價值提升"> 在地價值提升</label>
+          </div>
+          <div class="form-group">
+            <label>說明</label>
+            <textarea name="strategy_explain" rows="2"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- 第六部分：延伸思考 -->
+      <section class="section">
+        <h2>🧠 延伸思考</h2>
+        <p class="hint">如果你是行銷人員，請幫一項商品設計：</p>
+        <div class="form-group">
+          <label>1️⃣ 一句「故事行銷文案」</label>
+          <textarea name="ext_copy" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>2️⃣ 一個「定價策略」</label>
+          <textarea name="ext_pricing" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>3️⃣ 為什麼這樣定價？</label>
+          <textarea name="ext_reason" rows="2"></textarea>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" id="btn-save-draft" class="btn btn-outline">暫存草稿</button>
+        <button type="submit" class="btn btn-primary">送出</button>
+      </div>
+    </form>
+
+    <!-- 查看他人內容（老師發布後可見） -->
+    <div id="shared-view" class="section" style="display:none;">
+      <h2>👀 查看其他同學的內容</h2>
+      <div id="shared-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 老師後台畫面 ===== -->
+<div id="teacher-screen" class="screen">
+  <header class="topbar">
+    <span>👩‍🏫 老師後台</span>
+    <button id="btn-teacher-logout" class="btn btn-sm">登出</button>
+  </header>
+
+  <div class="container">
+    <!-- 發布控制 -->
+    <section class="section">
+      <h2>📢 發布設定</h2>
+      <div class="publish-controls">
+        <div class="publish-row">
+          <span>組內互看</span>
+          <button id="btn-pub-group" class="btn btn-outline btn-toggle" data-state="off">未發布</button>
+        </div>
+        <div class="publish-row">
+          <span>全班互看</span>
+          <button id="btn-pub-all" class="btn btn-outline btn-toggle" data-state="off">未發布</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 填寫狀況總覽 -->
+    <section class="section">
+      <h2>📊 填寫狀況</h2>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">全部</button>
+        <button class="filter-btn" data-filter="1">第一組</button>
+        <button class="filter-btn" data-filter="2">第二組</button>
+        <button class="filter-btn" data-filter="3">第三組</button>
+        <button class="filter-btn" data-filter="4">第四組</button>
+      </div>
+      <div id="teacher-student-list"></div>
+    </section>
+
+    <!-- 個別學生詳細內容 -->
+    <div id="teacher-detail-modal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <button class="modal-close">&times;</button>
+        <div id="teacher-detail-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

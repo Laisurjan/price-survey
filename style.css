@@ -1,0 +1,436 @@
+/* ===== Reset & Base ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* ===== Screens ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== Login ===== */
+.login-card {
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 40px 30px;
+  text-align: center;
+}
+.login-card h1 {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+  color: #2c3e50;
+}
+.subtitle {
+  color: #7f8c8d;
+  margin-bottom: 24px;
+}
+.login-tabs {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #999;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all .2s;
+}
+.tab-btn.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+  font-weight: 600;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== Card ===== */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  padding: 24px;
+}
+
+/* ===== Top Bar ===== */
+.topbar {
+  background: #2c3e50;
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ===== Container ===== */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+/* ===== Section ===== */
+.section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.section h2 {
+  font-size: 1.25rem;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ecf0f1;
+}
+.sub-section {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+.sub-section h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #34495e;
+}
+.hint {
+  color: #7f8c8d;
+  font-size: .9rem;
+  margin-bottom: 12px;
+}
+
+/* ===== Form ===== */
+.form-group {
+  margin-bottom: 14px;
+  text-align: left;
+}
+.form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: .9rem;
+  margin-bottom: 4px;
+  color: #34495e;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color .2s;
+  font-family: inherit;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,.15);
+}
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.checkbox-group label {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: .95rem;
+}
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3498db;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: #3498db;
+  color: #fff;
+}
+.btn-primary:hover { background: #2980b9; }
+.btn-outline {
+  background: #fff;
+  border: 1px solid #3498db;
+  color: #3498db;
+}
+.btn-outline:hover { background: #ebf5fb; }
+.btn-danger {
+  background: #e74c3c;
+  color: #fff;
+}
+.btn-danger:hover { background: #c0392b; }
+.btn-sm {
+  padding: 6px 14px;
+  font-size: .85rem;
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 6px;
+}
+.btn-sm:hover { background: rgba(255,255,255,.3); }
+.btn-block { width: 100%; margin-top: 8px; }
+
+/* ===== Product Card ===== */
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  position: relative;
+  background: #fafbfc;
+}
+.product-card h3 {
+  font-size: 1rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.product-card .btn-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ===== Form Actions ===== */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* ===== Publish Controls ===== */
+.publish-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.publish-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+.btn-toggle[data-state="on"] {
+  background: #27ae60;
+  color: #fff;
+  border-color: #27ae60;
+}
+
+/* ===== Filter Bar ===== */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 16px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: .9rem;
+  transition: all .2s;
+}
+.filter-btn.active {
+  background: #3498db;
+  color: #fff;
+  border-color: #3498db;
+}
+
+/* ===== Student List (Teacher) ===== */
+.student-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background .15s;
+}
+.student-row:hover { background: #f8f9fa; }
+.student-row .name { font-weight: 600; }
+.student-row .meta { color: #7f8c8d; font-size: .85rem; }
+.status-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.status-draft { background: #ffeaa7; color: #d68910; }
+.status-submitted { background: #d5f5e3; color: #27ae60; }
+.status-empty { background: #f0f0f0; color: #999; }
+
+/* ===== Modal ===== */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 700px;
+  width: 100%;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+}
+
+/* ===== Shared View Cards ===== */
+.shared-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.shared-card h3 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+.shared-card .field {
+  margin-bottom: 6px;
+}
+.shared-card .field-label {
+  font-weight: 600;
+  font-size: .85rem;
+  color: #7f8c8d;
+}
+.shared-card .field-value {
+  padding: 6px 0;
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c3e50;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: .95rem;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.toast.show { opacity: 1; }
+
+/* ===== Detail View ===== */
+.detail-section {
+  margin-bottom: 16px;
+}
+.detail-section h3 {
+  font-size: 1rem;
+  color: #3498db;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #ecf0f1;
+}
+.detail-field {
+  margin-bottom: 8px;
+}
+.detail-label {
+  font-weight: 600;
+  font-size: .85rem;
+  color: #7f8c8d;
+}
+.detail-value {
+  padding: 4px 0;
+}
+.detail-product-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+  margin-top: 8px;
+}
+.detail-product-table th,
+.detail-product-table td {
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+.detail-product-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+.chip {
+  display: inline-block;
+  padding: 2px 10px;
+  background: #ebf5fb;
+  color: #2980b9;
+  border-radius: 12px;
+  font-size: .85rem;
+  margin: 2px 4px 2px 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .login-card { margin: 20px 12px; padding: 24px 16px; }
+  .container { padding: 12px 8px 40px; }
+  .section { padding: 16px; }
+  .product-grid { grid-template-columns: 1fr; }
+  .form-actions { flex-direction: column; }
+  .modal-content { padding: 20px 16px; }
+  .detail-product-table { font-size: .8rem; }
+  .detail-product-table th,
+  .detail-product-table td { padding: 6px; }
+}
