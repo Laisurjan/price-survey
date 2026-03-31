@@ -95,7 +95,7 @@ function studentLogin() {
   const group = document.getElementById('stu-group').value;
 
   if (!cls || !seat || !name || !group) {
-    toast('請填寫完整資料');
+    toast('請填寫完整資料', 'warn');
     return;
   }
 
@@ -120,7 +120,7 @@ function studentLogin() {
 function teacherLogin() {
   const pwd = document.getElementById('teacher-pwd').value;
   if (pwd !== TEACHER_PASSWORD) {
-    toast('密碼錯誤');
+    toast('密碼錯誤', 'error');
     return;
   }
   currentRole = 'teacher';
@@ -307,7 +307,7 @@ async function saveForm(status) {
     if (status === 'submitted') clearLocal();
   } catch (err) {
     console.error(err);
-    toast('已暫存至本機，待連線後會自動同步');
+    toast('已暫存至本機，待連線後會自動同步', 'warn');
   }
 }
 
@@ -494,7 +494,7 @@ async function togglePublish(field, btn) {
     toast(newState ? '已發布' : '已取消發布');
   } catch (err) {
     console.error(err);
-    toast('操作失敗');
+    toast('操作失敗', 'error');
   }
 }
 
@@ -691,7 +691,7 @@ function htmlEsc(s) {
   return div.innerHTML;
 }
 
-function toast(msg) {
+function toast(msg, type = 'success') {
   let el = document.querySelector('.toast');
   if (!el) {
     el = document.createElement('div');
@@ -699,6 +699,7 @@ function toast(msg) {
     document.body.appendChild(el);
   }
   el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  el.classList.remove('show', 'toast-success', 'toast-error', 'toast-warn');
+  el.classList.add('show', `toast-${type}`);
+  setTimeout(() => el.classList.remove('show'), type === 'error' ? 4000 : 2500);
 }
