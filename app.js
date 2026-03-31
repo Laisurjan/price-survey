@@ -6,6 +6,7 @@
 // ⚠️ 請在 firebase-config.js 中填入你的 Firebase 設定
 // 若尚未建立，請參考 README.md 說明
 let db;
+let firebaseReady = false;
 
 function initFirebase() {
   if (typeof firebase === 'undefined') {
@@ -18,6 +19,17 @@ function initFirebase() {
   }
   firebase.initializeApp(window.FIREBASE_CONFIG);
   db = firebase.firestore();
+
+  // 啟用離線持久化，讓學生在訊號差時仍可儲存
+  db.enablePersistence({ synchronizeTabs: true })
+    .then(() => { firebaseReady = true; })
+    .catch(err => {
+      // 多頁籤或瀏覽器不支援時仍可正常運作
+      console.warn('Firestore persistence 無法啟用:', err.code);
+      firebaseReady = true;
+    });
+
+  firebaseReady = true;
   return true;
 }
 
@@ -83,7 +95,7 @@ function studentLogin() {
   const group = document.getElementById('stu-group').value;
 
   if (!cls || !seat || !name || !group) {
-    toast('請填寫完整資料');
+    toast('請填寫完整資料', 'warn');
     return;
   }
 
@@ -102,12 +114,13 @@ function studentLogin() {
   switchScreen('student-screen');
   loadStudentData();
   listenPublishState();
+  startAutoSave();
 }
 
 function teacherLogin() {
   const pwd = document.getElementById('teacher-pwd').value;
   if (pwd !== TEACHER_PASSWORD) {
-    toast('密碼錯誤');
+    toast('密碼錯誤', 'error');
     return;
   }
   currentRole = 'teacher';
@@ -116,6 +129,7 @@ function teacherLogin() {
 }
 
 function logout() {
+  stopAutoSave();
   unsubscribes.forEach(fn => fn());
   unsubscribes = [];
   currentUser = null;
@@ -123,6 +137,17 @@ function logout() {
   switchScreen('login-screen');
   // 清空密碼欄
   document.getElementById('teacher-pwd').value = '';
+  // 重置學生表單，避免下一位學生看到上一位的資料
+  resetStudentForm();
+}
+
+function resetStudentForm() {
+  const form = document.getElementById('survey-form');
+  form.reset();
+  // 重建預設 3 張空白商品卡
+  document.getElementById('product-list').innerHTML = '';
+  productCount = 0;
+  for (let i = 0; i < 3; i++) addProductCard();
 }
 
 function switchScreen(id) {
@@ -246,8 +271,39 @@ function collectFormData() {
   };
 }
 
+// --- localStorage 備份 ---
+function localKey() {
+  return currentUser ? `draft_${currentUser.id}` : null;
+}
+
+function saveToLocal(data, status) {
+  const key = localKey();
+  if (!key) return;
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, status, savedAt: Date.now() }));
+  } catch (e) { /* quota exceeded — ignore */ }
+}
+
+function loadFromLocal() {
+  const key = localKey();
+  if (!key) return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function clearLocal() {
+  const key = localKey();
+  if (key) localStorage.removeItem(key);
+}
+
 async function saveForm(status) {
   const data = collectFormData();
+
+  // 一律先存 localStorage 作為備份
+  saveToLocal(data, status);
+
   const doc = {
     ...currentUser,
     status,
@@ -258,9 +314,30 @@ async function saveForm(status) {
   try {
     await db.collection('responses').doc(currentUser.id).set(doc, { merge: true });
     toast(status === 'draft' ? '草稿已暫存' : '已成功送出！');
+    // 送出成功後清除本地備份
+    if (status === 'submitted') clearLocal();
   } catch (err) {
     console.error(err);
-    toast('儲存失敗，請稍後再試');
+    toast('已暫存至本機，待連線後會自動同步', 'warn');
+  }
+}
+
+// --- 自動暫存（每 30 秒） ---
+let autoSaveTimer = null;
+
+function startAutoSave() {
+  stopAutoSave();
+  autoSaveTimer = setInterval(() => {
+    if (currentRole === 'student' && currentUser) {
+      saveToLocal(collectFormData(), 'draft');
+    }
+  }, 30000);
+}
+
+function stopAutoSave() {
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer);
+    autoSaveTimer = null;
   }
 }
 
@@ -268,13 +345,36 @@ async function saveForm(status) {
 //  載入學生資料（回填表單）
 // ============================================================
 async function loadStudentData() {
-  try {
-    const docSnap = await db.collection('responses').doc(currentUser.id).get();
-    if (!docSnap.exists) return;
-    const saved = docSnap.data().data;
-    if (!saved) return;
+  // 載入期間先鎖定表單，避免使用者輸入被覆蓋（競爭條件）
+  const form = document.getElementById('survey-form');
+  const submitBtn = form.querySelector('[type="submit"]');
+  const draftBtn = document.getElementById('btn-save-draft');
+  if (submitBtn) submitBtn.disabled = true;
+  if (draftBtn) draftBtn.disabled = true;
 
-    const form = document.getElementById('survey-form');
+  try {
+    let saved = null;
+
+    // 嘗試從 Firestore 載入
+    try {
+      const docSnap = await db.collection('responses').doc(currentUser.id).get();
+      if (docSnap.exists && docSnap.data().data) {
+        saved = docSnap.data().data;
+      }
+    } catch (fbErr) {
+      console.warn('Firestore 載入失敗，嘗試本地備份', fbErr);
+    }
+
+    // 若 Firestore 無資料，嘗試 localStorage 備份
+    if (!saved) {
+      const local = loadFromLocal();
+      if (local && local.data) {
+        saved = local.data;
+        toast('已從本機備份還原');
+      }
+    }
+
+    if (!saved) return;
 
     // 清除預設商品卡，重建
     document.getElementById('product-list').innerHTML = '';
@@ -308,6 +408,9 @@ async function loadStudentData() {
 
   } catch (err) {
     console.error('載入資料失敗', err);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (draftBtn) draftBtn.disabled = false;
   }
 }
 
@@ -376,6 +479,8 @@ function setupTeacherDashboard() {
 }
 
 // --- 發布按鈕 ---
+let publishButtonsBound = false;
+
 function setupPublishButtons() {
   const btnGroup = document.getElementById('btn-pub-group');
   const btnAll = document.getElementById('btn-pub-all');
@@ -389,8 +494,12 @@ function setupPublishButtons() {
     }
   });
 
-  btnGroup.addEventListener('click', () => togglePublish('group', btnGroup));
-  btnAll.addEventListener('click', () => togglePublish('all', btnAll));
+  // 只綁定一次，避免重複登入時累加 listener
+  if (!publishButtonsBound) {
+    btnGroup.addEventListener('click', () => togglePublish('group', btnGroup));
+    btnAll.addEventListener('click', () => togglePublish('all', btnAll));
+    publishButtonsBound = true;
+  }
 }
 
 function setToggle(btn, on) {
@@ -410,7 +519,7 @@ async function togglePublish(field, btn) {
     toast(newState ? '已發布' : '已取消發布');
   } catch (err) {
     console.error(err);
-    toast('操作失敗');
+    toast('操作失敗', 'error');
   }
 }
 
@@ -474,19 +583,25 @@ function loadAllStudents() {
 }
 
 // --- 顯示個別學生詳細 ---
+function closeModal() {
+  document.getElementById('teacher-detail-modal').style.display = 'none';
+}
+
 function showDetail(d) {
   const modal = document.getElementById('teacher-detail-modal');
   const body = document.getElementById('teacher-detail-body');
   body.innerHTML = renderStudentDetail(d, false);
   modal.style.display = 'flex';
-
-  modal.querySelector('.modal-close').onclick = () => {
-    modal.style.display = 'none';
-  };
-  modal.addEventListener('click', e => {
-    if (e.target === modal) modal.style.display = 'none';
-  });
 }
+
+// Modal 事件只綁定一次（避免每次 showDetail 都累加 listener）
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('teacher-detail-modal');
+  modal.querySelector('.modal-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+});
 
 // ============================================================
 //  渲染學生詳細內容（共用：老師後台 & 學生互看）
@@ -607,7 +722,7 @@ function htmlEsc(s) {
   return div.innerHTML;
 }
 
-function toast(msg) {
+function toast(msg, type = 'success') {
   let el = document.querySelector('.toast');
   if (!el) {
     el = document.createElement('div');
@@ -615,6 +730,7 @@ function toast(msg) {
     document.body.appendChild(el);
   }
   el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  el.classList.remove('show', 'toast-success', 'toast-error', 'toast-warn');
+  el.classList.add('show', `toast-${type}`);
+  setTimeout(() => el.classList.remove('show'), type === 'error' ? 4000 : 2500);
 }
