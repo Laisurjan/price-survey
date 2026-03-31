@@ -17,17 +17,19 @@ function initFirebase() {
     alert('請先設定 firebase-config.js（參考 README.md）');
     return false;
   }
-  firebase.initializeApp(window.FIREBASE_CONFIG);
-  db = firebase.firestore();
+  try {
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    db = firebase.firestore();
 
-  // 啟用離線持久化，讓學生在訊號差時仍可儲存
-  db.enablePersistence({ synchronizeTabs: true })
-    .then(() => { firebaseReady = true; })
-    .catch(err => {
-      // 多頁籤或瀏覽器不支援時仍可正常運作
+    // 啟用離線持久化，讓學生在訊號差時仍可儲存
+    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
       console.warn('Firestore persistence 無法啟用:', err.code);
-      firebaseReady = true;
     });
+  } catch (err) {
+    console.error('Firebase 初始化失敗:', err);
+    alert('系統初始化失敗，請重新整理頁面');
+    return false;
+  }
 
   firebaseReady = true;
   return true;
@@ -298,27 +300,40 @@ function clearLocal() {
   if (key) localStorage.removeItem(key);
 }
 
+// Firestore 操作加上 timeout，避免 hang 住導致畫面無反應
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+  ]);
+}
+
 async function saveForm(status) {
+  if (!currentUser) return;
+
   const data = collectFormData();
 
   // 一律先存 localStorage 作為備份
   saveToLocal(data, status);
 
-  const doc = {
-    ...currentUser,
-    status,
-    data,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-  };
-
   try {
-    await db.collection('responses').doc(currentUser.id).set(doc, { merge: true });
+    const doc = {
+      ...currentUser,
+      status,
+      data,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await withTimeout(
+      db.collection('responses').doc(currentUser.id).set(doc, { merge: true }),
+      10000
+    );
     toast(status === 'draft' ? '草稿已暫存' : '已成功送出！');
     // 送出成功後清除本地備份
     if (status === 'submitted') clearLocal();
   } catch (err) {
-    console.error(err);
-    toast('已暫存至本機，待連線後會自動同步', 'warn');
+    console.error('Firestore 儲存失敗:', err);
+    toast('已暫存至本機，待連線後請重新送出', 'warn');
   }
 }
 
@@ -345,19 +360,17 @@ function stopAutoSave() {
 //  載入學生資料（回填表單）
 // ============================================================
 async function loadStudentData() {
-  // 載入期間先鎖定表單，避免使用者輸入被覆蓋（競爭條件）
   const form = document.getElementById('survey-form');
-  const submitBtn = form.querySelector('[type="submit"]');
-  const draftBtn = document.getElementById('btn-save-draft');
-  if (submitBtn) submitBtn.disabled = true;
-  if (draftBtn) draftBtn.disabled = true;
 
   try {
     let saved = null;
 
-    // 嘗試從 Firestore 載入
+    // 嘗試從 Firestore 載入（加 timeout 防止 hang 住）
     try {
-      const docSnap = await db.collection('responses').doc(currentUser.id).get();
+      const docSnap = await withTimeout(
+        db.collection('responses').doc(currentUser.id).get(),
+        8000
+      );
       if (docSnap.exists && docSnap.data().data) {
         saved = docSnap.data().data;
       }
@@ -408,9 +421,6 @@ async function loadStudentData() {
 
   } catch (err) {
     console.error('載入資料失敗', err);
-  } finally {
-    if (submitBtn) submitBtn.disabled = false;
-    if (draftBtn) draftBtn.disabled = false;
   }
 }
 
