@@ -334,6 +334,13 @@ function stopAutoSave() {
 //  載入學生資料（回填表單）
 // ============================================================
 async function loadStudentData() {
+  // 載入期間先鎖定表單，避免使用者輸入被覆蓋（競爭條件）
+  const form = document.getElementById('survey-form');
+  const submitBtn = form.querySelector('[type="submit"]');
+  const draftBtn = document.getElementById('btn-save-draft');
+  if (submitBtn) submitBtn.disabled = true;
+  if (draftBtn) draftBtn.disabled = true;
+
   try {
     let saved = null;
 
@@ -357,8 +364,6 @@ async function loadStudentData() {
     }
 
     if (!saved) return;
-
-    const form = document.getElementById('survey-form');
 
     // 清除預設商品卡，重建
     document.getElementById('product-list').innerHTML = '';
@@ -392,6 +397,9 @@ async function loadStudentData() {
 
   } catch (err) {
     console.error('載入資料失敗', err);
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (draftBtn) draftBtn.disabled = false;
   }
 }
 
@@ -460,6 +468,8 @@ function setupTeacherDashboard() {
 }
 
 // --- 發布按鈕 ---
+let publishButtonsBound = false;
+
 function setupPublishButtons() {
   const btnGroup = document.getElementById('btn-pub-group');
   const btnAll = document.getElementById('btn-pub-all');
@@ -473,8 +483,12 @@ function setupPublishButtons() {
     }
   });
 
-  btnGroup.addEventListener('click', () => togglePublish('group', btnGroup));
-  btnAll.addEventListener('click', () => togglePublish('all', btnAll));
+  // 只綁定一次，避免重複登入時累加 listener
+  if (!publishButtonsBound) {
+    btnGroup.addEventListener('click', () => togglePublish('group', btnGroup));
+    btnAll.addEventListener('click', () => togglePublish('all', btnAll));
+    publishButtonsBound = true;
+  }
 }
 
 function setToggle(btn, on) {
@@ -558,19 +572,25 @@ function loadAllStudents() {
 }
 
 // --- 顯示個別學生詳細 ---
+function closeModal() {
+  document.getElementById('teacher-detail-modal').style.display = 'none';
+}
+
 function showDetail(d) {
   const modal = document.getElementById('teacher-detail-modal');
   const body = document.getElementById('teacher-detail-body');
   body.innerHTML = renderStudentDetail(d, false);
   modal.style.display = 'flex';
-
-  modal.querySelector('.modal-close').onclick = () => {
-    modal.style.display = 'none';
-  };
-  modal.addEventListener('click', e => {
-    if (e.target === modal) modal.style.display = 'none';
-  });
 }
+
+// Modal 事件只綁定一次（避免每次 showDetail 都累加 listener）
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('teacher-detail-modal');
+  modal.querySelector('.modal-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+});
 
 // ============================================================
 //  渲染學生詳細內容（共用：老師後台 & 學生互看）
