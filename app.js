@@ -117,6 +117,7 @@ function studentLogin() {
   loadStudentData();
   listenPublishState();
   startAutoSave();
+  checkFirestoreConnection();
 }
 
 function teacherLogin() {
@@ -333,7 +334,13 @@ async function saveForm(status) {
     if (status === 'submitted') clearLocal();
   } catch (err) {
     console.error('Firestore 儲存失敗:', err);
-    toast('已暫存至本機，待連線後請重新送出', 'warn');
+    if (err.code === 'permission-denied') {
+      toast('Firebase 權限被拒絕！請通知老師檢查 Firestore Rules 是否已發布', 'error');
+    } else if (err.message === 'timeout') {
+      toast('連線逾時，資料已暫存於本機，連線恢復後請重新送出', 'warn');
+    } else {
+      toast('已暫存至本機，待連線後請重新送出', 'warn');
+    }
   }
 }
 
@@ -720,6 +727,20 @@ function renderStudentDetail(d, compact) {
       </div>
     </div>
   `;
+}
+
+// ============================================================
+//  連線狀態檢測
+// ============================================================
+function checkFirestoreConnection() {
+  db.collection('settings').doc('publish').get()
+    .then(() => console.log('Firestore 連線正常'))
+    .catch(err => {
+      console.error('Firestore 連線測試失敗:', err);
+      if (err.code === 'permission-denied') {
+        toast('Firebase 權限錯誤！請通知老師檢查 Firestore Rules', 'error');
+      }
+    });
 }
 
 // ============================================================
