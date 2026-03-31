@@ -493,6 +493,103 @@ function setupTeacherDashboard() {
   setupPublishButtons();
   setupFilters();
   loadAllStudents();
+  document.getElementById('btn-export-xlsx').addEventListener('click', exportToXlsx);
+}
+
+// --- 匯出 Excel ---
+async function exportToXlsx() {
+  toast('正在匯出...');
+  try {
+    const snap = await db.collection('responses').orderBy('group').get();
+    if (snap.empty) {
+      toast('沒有資料可匯出', 'warn');
+      return;
+    }
+
+    // --- Sheet 1: 總覽 ---
+    const overview = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      const data = d.data || {};
+      overview.push({
+        '班級': d.class || '',
+        '座號': d.seat || '',
+        '姓名': d.name || '',
+        '組別': GROUP_NAMES[(d.group || 1) - 1],
+        '狀態': d.status === 'submitted' ? '已送出' : d.status === 'draft' ? '草稿' : '未填',
+        '價格呈現方式': (data.price_display || []).join('、'),
+        '價格呈現-其他': data.price_display_other || '',
+        '故事元素': (data.story_element || []).join('、'),
+        '故事元素-其他': data.story_element_other || '',
+        '商品故事文案': data.story_copy || '',
+        '定價方法1': data.pricing_1 || '',
+        '定價方法2': data.pricing_2 || '',
+        '定價方法3': data.pricing_3 || '',
+        '定價方法4': data.pricing_4 || '',
+        '哪間比較便宜': data.compare_cheap || '',
+        '哪間比較有價值感': data.compare_value || '',
+        '價格策略': (data.strategy || []).join('、'),
+        '策略說明': data.strategy_explain || '',
+        '延伸-故事行銷文案': data.ext_copy || '',
+        '延伸-定價策略': data.ext_pricing || '',
+        '延伸-為什麼這樣定價': data.ext_reason || '',
+      });
+    });
+
+    // --- Sheet 2: 商品明細 ---
+    const products = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      const data = d.data || {};
+      (data.products || []).forEach((p, i) => {
+        products.push({
+          '班級': d.class || '',
+          '座號': d.seat || '',
+          '姓名': d.name || '',
+          '組別': GROUP_NAMES[(d.group || 1) - 1],
+          '商品序號': i + 1,
+          '商品名稱': p.name || '',
+          '品牌': p.brand || '',
+          '規格': p.spec || '',
+          '單價': p.price || '',
+          '單位價格': p.unitprice || '',
+          '產地': p.origin || '',
+          '包裝特色': p.package || '',
+          '是否促銷': p.promo || '',
+        });
+      });
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.json_to_sheet(overview);
+    const ws2 = XLSX.utils.json_to_sheet(products);
+
+    // 自動欄寬
+    autoFitColumns(ws1, overview);
+    autoFitColumns(ws2, products);
+
+    XLSX.utils.book_append_sheet(wb, ws1, '填答總覽');
+    XLSX.utils.book_append_sheet(wb, ws2, '商品明細');
+
+    const today = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `詢價任務結果_${today}.xlsx`);
+    toast('匯出成功');
+  } catch (err) {
+    console.error('匯出失敗:', err);
+    toast('匯出失敗', 'error');
+  }
+}
+
+function autoFitColumns(ws, data) {
+  if (!data.length) return;
+  const keys = Object.keys(data[0]);
+  ws['!cols'] = keys.map(k => {
+    const maxLen = Math.max(
+      k.length,
+      ...data.map(row => String(row[k] || '').length)
+    );
+    return { wch: Math.min(maxLen + 2, 40) };
+  });
 }
 
 // --- 發布按鈕 ---
