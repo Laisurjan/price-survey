@@ -137,6 +137,17 @@ function logout() {
   switchScreen('login-screen');
   // 清空密碼欄
   document.getElementById('teacher-pwd').value = '';
+  // 重置學生表單，避免下一位學生看到上一位的資料
+  resetStudentForm();
+}
+
+function resetStudentForm() {
+  const form = document.getElementById('survey-form');
+  form.reset();
+  // 重建預設 3 張空白商品卡
+  document.getElementById('product-list').innerHTML = '';
+  productCount = 0;
+  for (let i = 0; i < 3; i++) addProductCard();
 }
 
 function switchScreen(id) {
