@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **角色切換**：學生與老師共用同一頁面，靠 `currentRole` 狀態區分
 - **學生 ID**：以 `${class}_${seat}_${name}` 作為 Firestore document ID
 - **發布控制**：Firestore `settings/publish` 文件有 `group`（組內互看）和 `all`（全班互看）兩個布林欄位，學生端透過 `onSnapshot` 即時監聽
-- **4 組制**：組別固定為第一～四組
+- **8 組制**：組別固定為第一～四組 + 東商第一～四組
 - **老師密碼**：寫死在 `app.js` 的 `TEACHER_PASSWORD` 常數（預設 `teacher2025`）
 
 ## Deployment

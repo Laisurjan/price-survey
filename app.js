@@ -37,7 +37,7 @@ function initFirebase() {
 
 // ---------- 常數 ----------
 const TEACHER_PASSWORD = 'teacher2025';  // 可改成你要的密碼
-const GROUP_NAMES = ['第一組', '第二組', '第三組', '第四組'];
+const GROUP_NAMES = ['第一組', '第二組', '第三組', '第四組', '東商第一組', '東商第二組', '東商第三組', '東商第四組'];
 
 // ---------- 全域狀態 ----------
 let currentUser = null;  // { class, seat, name, group, id }
